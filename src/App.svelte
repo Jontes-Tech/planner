@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { writable } from "svelte/store";
   import Login from "./lib/Login.svelte";
   import { currentUser, pb } from "./lib/pocketbase";
   function getNextHundredDays() {
@@ -57,12 +58,29 @@
     midnight.setHours(0, 0, 0, 0);
     return midnight.getTime();
   }
+  // Write an object that satisfies User interface
+  const myUserdata = writable({
+    collectionId: "",
+    collectionName: "",
+    created: "",
+    emailVisibility: false,
+    friends: [],
+    id: "",
+    not_free: [],
+    updated: "",
+    username: "",
+    verified: false,
+  });
   async function toggleDate(date: Date) {
     const midnightUnix = getMidnightUnix(date);
+    myUserdata.set({
+      ...$myUserdata,
+      not_free: $myUserdata.not_free.includes(midnightUnix)
+        ? $myUserdata.not_free.filter((time: number) => time !== midnightUnix)
+        : [...$myUserdata.not_free, midnightUnix],
+    });
     await pb.collection("users").update($currentUser.id, {
-      not_free: $currentUser.not_free.includes(midnightUnix)
-        ? $currentUser.not_free.filter((time: number) => time !== midnightUnix)
-        : [...$currentUser.not_free, midnightUnix],
+      not_free: $myUserdata.not_free,
     });
     display = false;
     doFetch();
@@ -89,10 +107,11 @@
   let users: Users;
   let display = false;
   async function doFetch() {
-    currentUser.set(pb.authStore.model);
-    users = await pb.collection("users").getList(1, 50, {
-      expand: "friends",
-    });
+    users = await pb.collection("users").getList(1, 50);
+    const updatedUser = (await pb
+      .collection("users")
+      .getOne($currentUser.id)) as User;
+    myUserdata.set(updatedUser);
     display = true;
   }
   function busyPeople(date: Date) {
@@ -155,7 +174,7 @@
             toggleDate(date);
           }}
           class={"p-2 text-white mt-2 " +
-            ($currentUser.not_free.includes(getMidnightUnix(date))
+            ($myUserdata.not_free.includes(getMidnightUnix(date))
               ? "bg-stone-700"
               : "bg-stone-800")}
         >
