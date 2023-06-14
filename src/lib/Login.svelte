@@ -9,7 +9,7 @@
 </script>
 
 {#if $currentUser}
-  <p class="text-gray-300">Logged in as {$currentUser.email}</p>
+  <p class="text-gray-300">Logged in with ID {$currentUser.id}</p>
 {:else}
   <form on:submit|preventDefault={login} class="flex flex-col gap-2">
     <input

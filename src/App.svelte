@@ -71,19 +71,35 @@
   let users;
   let display = false;
   async function doFetch() {
-    users = await pb.collection("users").getList(1, 50);
+    users = await pb.collection("users").getList(1, 50, {
+      expand: "friends",
+    });
     display = true;
   }
   function busyPeople(date: Date) {
     const busyUserIds = users.items
-      .filter((user: any) =>
-        user.not_free.includes(
-          getMidnightUnix(date) && user.id !== $currentUser.id
-        )
-      )
+      .filter((user: any) => user.not_free.includes(getMidnightUnix(date)))
       .map((user: any) => user.username);
-
+    console.log(busyUserIds);
     return busyUserIds;
+  }
+  async function addFriend() {
+    const friendUsername = prompt(
+      "Enter your friend's ID (not username or email)"
+    );
+    const me = await pb.collection("users").getOne($currentUser.id);
+    const existingFriends = me.friends;
+    if (friendUsername) {
+      if (existingFriends) {
+        await pb.collection("users").update($currentUser.id, {
+          friends: [...existingFriends, friendUsername],
+        });
+      } else {
+        await pb.collection("users").update($currentUser.id, {
+          friends: [friendUsername],
+        });
+      }
+    }
   }
   doFetch();
 </script>
@@ -106,6 +122,12 @@
         display = false;
         doFetch();
       }}>Reload Friend's Statuses</button
+    >
+    <button
+      class="mt-2 p-2 bg-neutral-500 rounded"
+      on:click={() => {
+        addFriend();
+      }}>Add Friend</button
     >
     <ol>
       {#each getNextHundredDays() as date}
