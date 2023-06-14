@@ -67,10 +67,29 @@
     display = false;
     doFetch();
   }
-
-  let users;
+  interface User {
+    collectionId: string;
+    collectionName: string;
+    created: string;
+    emailVisibility: boolean;
+    friends: string[];
+    id: string;
+    not_free: number[];
+    updated: string;
+    username: string;
+    verified: boolean;
+  }
+  interface Users {
+    page: number;
+    perPage: number;
+    totalItems: number;
+    totalPages: number;
+    items: User[];
+  }
+  let users: Users;
   let display = false;
   async function doFetch() {
+    currentUser.set(pb.authStore.model);
     users = await pb.collection("users").getList(1, 50, {
       expand: "friends",
     });
@@ -78,9 +97,8 @@
   }
   function busyPeople(date: Date) {
     const busyUserIds = users.items
-      .filter((user: any) => user.not_free.includes(getMidnightUnix(date)))
-      .map((user: any) => user.username);
-    console.log(busyUserIds);
+      .filter((user: User) => user.not_free.includes(getMidnightUnix(date)))
+      .map((user: User) => user.username);
     return busyUserIds;
   }
   async function addFriend() {
