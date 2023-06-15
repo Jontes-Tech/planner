@@ -148,20 +148,20 @@
   </div>
   {#if $currentUser}
     <button
-      class="mt-2 p-2 bg-neutral-500 rounded"
+      class="mt-2 p-2 bg-neutral-800 text-white rounded"
       on:click={() => {
         pb.authStore.clear();
       }}>Sign Out</button
     >
     <button
-      class="mt-2 p-2 bg-neutral-500 rounded"
+      class="mt-2 p-2 bg-neutral-800 text-white rounded"
       on:click={() => {
         display = false;
         doFetch();
       }}>Reload Friend's Statuses</button
     >
     <button
-      class="mt-2 p-2 bg-neutral-500 rounded"
+      class="mt-2 p-2 bg-neutral-800 text-white rounded"
       on:click={() => {
         addFriend();
       }}>Add Friend</button
@@ -173,7 +173,7 @@
           on:click={() => {
             toggleDate(date);
           }}
-          class={"p-2 text-white mt-2 " +
+          class={"p-2 text-white mt-2 rounded " +
             ($myUserdata.not_free.includes(getMidnightUnix(date))
               ? "bg-stone-700"
               : "bg-stone-800")}
